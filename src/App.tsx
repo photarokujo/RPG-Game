@@ -1,59 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { Character } from './components/Character';
-import { WorldMap } from './components/WorldMap';
-import { Dialog } from './components/Dialog';
-import { Inventory } from './components/Inventory';
-import { Shop } from './components/Shop';
-import { Workshop } from './components/Workshop';
-import { Hospital } from './components/Hospital';
-import { Home } from './components/Home';
-import { Supermarket } from './components/Supermarket';
-import { ElectronicsShop } from './components/ElectronicsShop';
-import { ManufacturingShop } from './components/ManufacturingShop';
+'use client'
 
-const GRID_SIZE = 32;
+import React, { useState, useEffect } from 'react'
+import { Character } from './components/Character'
+import { WorldMap } from './components/WorldMap'
+import { Dialog } from './components/Dialog'
+import { Inventory } from './components/Inventory'
+import { Shop } from './components/Shop'
+import { Workshop } from './components/Workshop'
+import { Hospital } from './components/Hospital'
+import { Home } from './components/Home'
+import { Supermarket } from './components/Supermarket'
+import { ElectronicsShop } from './components/ElectronicsShop'
+import { ManufacturingShop } from './components/ManufacturingShop'
+import { TaskList, Task } from './components/task-list'
+
+const GRID_SIZE = 32
 
 interface MapData {
-  backgroundColor: string;
-  width: number;
-  height: number;
+  backgroundColor: string
+  width: number
+  height: number
   buildings?: Array<{
-    name: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    enterX: number;
-    enterY: number;
-    color: string;
-  }>;
+    name: string
+    x: number
+    y: number
+    width: number
+    height: number
+    enterX: number
+    enterY: number
+    color: string
+  }>
   roads?: Array<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }>;
+    x: number
+    y: number
+    width: number
+    height: number
+  }>
   exit?: {
-    x: number;
-    y: number;
-    toMap: string;
-    toX: number;
-    toY: number;
-  };
+    x: number
+    y: number
+    toMap: string
+    toX: number
+    toY: number
+  }
 }
 
 interface Maps {
-  [key: string]: MapData;
+  [key: string]: MapData
 }
 
 export default function Game() {
-  const [playerPosition, setPlayerPosition] = useState({ x: 5, y: 5 });
-  const [currentMap, setCurrentMap] = useState('town');
-  const [gameState, setGameState] = useState('start');
-  const [inventory, setInventory] = useState<Array<{ name: string; healthScore: number }>>([]);
-  const [score, setScore] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [dialog, setDialog] = useState<{ speaker: string; text: string } | null>(null);
+  const [playerPosition, setPlayerPosition] = useState({ x: 5, y: 5 })
+  const [currentMap, setCurrentMap] = useState('town')
+  const [gameState, setGameState] = useState('start')
+  const [inventory, setInventory] = useState<Array<{ name: string; healthScore: number }>>([])
+  const [score, setScore] = useState(0)
+  const [level, setLevel] = useState(1)
+  const [dialog, setDialog] = useState<{ speaker: string; text: string } | null>(null)
+  const [tasks, setTasks] = useState<Task[]>([])
 
   const maps: Maps = {
     town: {
@@ -116,78 +120,78 @@ export default function Game() {
       height: 12,
       exit: { x: 6, y: 11, toMap: 'town', toX: 17, toY: 11 },
     },
-  };
+  }
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameState !== 'exploring') return;
+      if (gameState !== 'exploring') return
 
-      const currentMapData = maps[currentMap];
-      const newPosition = { ...playerPosition };
+      const currentMapData = maps[currentMap]
+      const newPosition = { ...playerPosition }
 
       switch (e.key) {
         case 'ArrowUp':
-          newPosition.y = Math.max(0, newPosition.y - 1);
-          break;
+          newPosition.y = Math.max(0, newPosition.y - 1)
+          break
         case 'ArrowDown':
-          newPosition.y = Math.min(currentMapData.height - 1, newPosition.y + 1);
-          break;
+          newPosition.y = Math.min(currentMapData.height - 1, newPosition.y + 1)
+          break
         case 'ArrowLeft':
-          newPosition.x = Math.max(0, newPosition.x - 1);
-          break;
+          newPosition.x = Math.max(0, newPosition.x - 1)
+          break
         case 'ArrowRight':
-          newPosition.x = Math.min(currentMapData.width - 1, newPosition.x + 1);
-          break;
+          newPosition.x = Math.min(currentMapData.width - 1, newPosition.x + 1)
+          break
       }
 
       if (currentMapData.exit && newPosition.x === currentMapData.exit.x && newPosition.y === currentMapData.exit.y) {
-        setCurrentMap(currentMapData.exit.toMap);
-        setPlayerPosition({ x: currentMapData.exit.toX, y: currentMapData.exit.toY });
+        setCurrentMap(currentMapData.exit.toMap)
+        setPlayerPosition({ x: currentMapData.exit.toX, y: currentMapData.exit.toY })
       } else if (currentMap === 'town') {
         const building = currentMapData.buildings?.find(
           b => newPosition.x >= b.x && newPosition.x < b.x + b.width &&
              newPosition.y >= b.y && newPosition.y < b.y + b.height
-        );
+        )
         if (building) {
-          setCurrentMap(building.name);
-          setPlayerPosition({ x: building.enterX, y: building.enterY });
+          setCurrentMap(building.name)
+          setPlayerPosition({ x: building.enterX, y: building.enterY })
         } else {
-          setPlayerPosition(newPosition);
+          setPlayerPosition(newPosition)
         }
       } else {
-        setPlayerPosition(newPosition);
+        setPlayerPosition(newPosition)
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [playerPosition, currentMap, gameState]);
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [playerPosition, currentMap, gameState])
 
   const startGame = (playerName: string) => {
-    setGameState('exploring');
-    setCurrentMap('town');
-    setPlayerPosition({ x: 5, y: 5 });
+    setGameState('exploring')
+    setCurrentMap('town')
+    setPlayerPosition({ x: 5, y: 5 })
     setDialog({
       speaker: 'Game',
       text: `Welcome, ${playerName}! Use arrow keys to move around the town. Visit the workshop to learn about health.`
-    });
-  };
+    })
+  }
 
   const enterBuilding = (building: string) => {
-    setCurrentMap(building);
+    setCurrentMap(building)
     switch (building) {
       case 'home':
         setDialog({
           speaker: 'Parents',
           text: 'Welcome home! We have some tasks for you. Can you buy some healthy items from the shops?'
-        });
-        break;
+        })
+        break
       case 'workshop':
         setDialog({
           speaker: 'Workshop Instructor',
           text: "Welcome to the Health Workshop! Here you'll learn about checking if items are good for your health."
-        });
-        break;
+        })
+        break
       case 'shop':
       case 'supermarket':
       case 'electronics':
@@ -195,93 +199,115 @@ export default function Game() {
         setDialog({
           speaker: 'Shopkeeper',
           text: 'Welcome to our shop! Feel free to look around and ask questions about our products.'
-        });
-        break;
+        })
+        break
       case 'hospital':
         setDialog({
           speaker: 'Doctor',
           text: 'Welcome to the hospital. Remember, prevention is better than cure!'
-        });
-        break;
+        })
+        break
     }
-  };
+  }
 
   const exitBuilding = () => {
-    const currentMapData = maps[currentMap];
+    const currentMapData = maps[currentMap]
     if (currentMapData.exit) {
-      setCurrentMap(currentMapData.exit.toMap);
-      setPlayerPosition({ x: currentMapData.exit.toX, y: currentMapData.exit.toY });
+      setCurrentMap(currentMapData.exit.toMap)
+      setPlayerPosition({ x: currentMapData.exit.toX, y: currentMapData.exit.toY })
     }
-  };
+  }
 
   const buyItem = (item: { name: string; healthScore: number }) => {
-    setInventory([...inventory, item]);
+    setInventory([...inventory, item])
     setDialog({
       speaker: 'Shopkeeper',
       text: `You bought ${item.name}. Remember to check the labels and ingredients!`
-    });
-  };
+    })
+  }
 
   const evaluateItems = () => {
-    const newScore = inventory.reduce((sum, item) => sum + item.healthScore, 0);
-    setScore(newScore);
+    const newScore = inventory.reduce((sum, item) => sum + item.healthScore, 0)
+    setScore(prevScore => prevScore + newScore)
     if (newScore >= 10 * level) {
-      setLevel(level + 1);
+      setLevel(prevLevel => prevLevel + 1)
+      setTasks([]) // Clear tasks when leveling up
       setDialog({
         speaker: 'Parents',
-        text: `Great job! You scored ${newScore} points. You're ready for the next level!`
-      });
+        text: `Great job! You scored ${newScore} points. You're ready for the next level! All current tasks have been cleared.`
+      })
     } else {
       setDialog({
         speaker: 'Parents',
         text: `You scored ${newScore} points. Try again to make healthier choices.`
-      });
+      })
     }
-    setInventory([]);
-  };
+    setInventory([])
+  }
+
+  const movePlayer = (x: number, y: number) => {
+    if (currentMap === 'home') {
+      setPlayerHomePosition({ x, y })
+    } else {
+      setPlayerPosition({ x, y })
+    }
+  }
+
+  const assignTask = (newTask: Task) => {
+    setTasks(prevTasks => [...prevTasks, newTask])
+  }
 
   return (
     <div className='overflow-hidden'>
-    <div className="game-container w-full h-screen flex justify-center items-center bg-gray-800 scale-125 overflow-hidden">
-      <div className="game-screen w-[640px] h-[640px] bg-white relative overflow-hidden">
-        {gameState === 'start' && (
-          <div className="start-screen flex flex-col items-center justify-center h-full">
-            <h1 className="text-4xl mb-4">Health Quest</h1>
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={() => startGame('Player')}
-            >
-              Start Game
-            </button>
+      <div className="game-container w-full h-screen flex justify-center items-center bg-gray-800 scale-125">
+        <div className="game-screen w-[640px] h-[640px] bg-white relative overflow-hidden">
+          {gameState === 'start' && (
+            <div className="start-screen flex flex-col items-center justify-center h-full">
+              <h1 className="text-4xl mb-4">Health Quest</h1>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={() => startGame('Player')}
+              >
+                Start Game
+              </button>
+            </div>
+          )}
+          {gameState === 'exploring' && (
+            <>
+              <WorldMap
+                mapData={maps[currentMap]}
+                playerPosition={playerPosition}
+                onEnterBuilding={enterBuilding}
+              />
+              <Character position={playerPosition} />
+              {currentMap === 'workshop' && <Workshop onExit={exitBuilding} />}
+              {currentMap === 'shop' && <Shop onBuy={buyItem} onExit={exitBuilding} />}
+              {currentMap === 'supermarket' && <Supermarket onBuy={buyItem} onExit={exitBuilding} />}
+              {currentMap === 'electronics' && <ElectronicsShop onBuy={buyItem} onExit={exitBuilding} />}
+              {currentMap === 'manufacturing' && <ManufacturingShop onBuy={buyItem} onExit={exitBuilding} />}
+              {currentMap === 'hospital' && <Hospital onExit={exitBuilding} />}
+              {currentMap === 'home' && (
+                <Home
+                  onEvaluate={evaluateItems}
+                  onExit={exitBuilding}
+                  onEntering={() => setDialog()}
+                  onAssignTask={assignTask}
+                  tasks={tasks}
+                />
+              )}
+            </>
+          )}
+          {dialog && (
+            <Dialog speaker={dialog.speaker} text={dialog.text} onClose={() => setDialog(null)} />
+          )}
+          <div className="hud absolute top-0 left-0 p-2 bg-black bg-opacity-50 text-white">
+            <p>Level: {level}</p>
+            <p>Score: {score}</p>
           </div>
-        )}
-        {gameState === 'exploring' && (
-          <>
-            <WorldMap
-              mapData={maps[currentMap]}
-              playerPosition={playerPosition}
-              onEnterBuilding={enterBuilding}
-            />
-            <Character position={playerPosition} />
-            {currentMap === 'workshop' && <Workshop onExit={exitBuilding} />}
-            {currentMap === 'shop' && <Shop onBuy={buyItem} onExit={exitBuilding} />}
-            {currentMap === 'supermarket' && <Supermarket onBuy={buyItem} onExit={exitBuilding} />}
-            {currentMap === 'electronics' && <ElectronicsShop onBuy={buyItem} onExit={exitBuilding} />}
-            {currentMap === 'manufacturing' && <ManufacturingShop onBuy={buyItem} onExit={exitBuilding} />}
-            {currentMap === 'hospital' && <Hospital onExit={exitBuilding} />}
-            {currentMap === 'home' && <Home onEvaluate={evaluateItems} onExit={exitBuilding} />}
-          </>
-        )}
-        {dialog && (
-          <Dialog speaker={dialog.speaker} text={dialog.text} onClose={() => setDialog(null)} />
-        )}
-        <div className="hud absolute top-0 left-0 p-2 bg-black bg-opacity-50 text-white">
-          <p>Level: {level}</p>
-          <p>Score: {score}</p>
+          <Inventory items={inventory} />
+          <TaskList tasks={tasks} />
         </div>
-        <Inventory items={inventory} />
       </div>
     </div>
-    </div>
-  );
+  )
 }

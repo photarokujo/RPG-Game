@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { BuildingInterior } from './BuildingInterior'
 import { Task, TaskList } from './task-list'
+import { Button } from "./ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog"
 
 interface HomeProps {
   onEvaluate: () => void
@@ -10,86 +13,157 @@ interface HomeProps {
 }
 
 export function Home({ onEvaluate, onExit, onEntering, onAssignTask, tasks }: HomeProps) {
-  const [showDialog, setShowDialog] = useState(false)
+  const [showParentDialog, setShowParentDialog] = useState(false)
+  const [activeParent, setActiveParent] = useState<'Mom' | 'Dad' | null>(null)
 
   useEffect(() => {
     onEntering()
   }, [onEntering])
 
-  const assignTask = (parent: 'Mom' | 'Dad') => {
+  // Set active parent when button is clicked
+  const handleParentInteraction = (parent: 'Mom' | 'Dad') => {
+    setActiveParent(parent)
+    setShowParentDialog(true)
+  }
+
+  const assignTask = (parent: 'Dad') => {
     const newTask: Task = {
       id: tasks.length + 1,
-      description: `Task ${tasks.length + 1} from ${parent}`,
+      description: `Task ${tasks.length + 1} from Dad`,
       assignedBy: parent,
     }
     onAssignTask(newTask)
-    setShowDialog(false)
+    setShowParentDialog(false)
   }
 
+  // Updated layout with NPC buttons for interaction
+  const homeLayout = [
+    [
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'furniture', icon: '🪑', walkable: false },
+      { type: 'furniture', icon: '🍽️', walkable: false },
+      { type: 'furniture', icon: '🍽️', walkable: false },
+      { type: 'furniture', icon: '🪑', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'furniture', icon: '🛋️', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'decoration', icon: '🪴', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'furniture', icon: '📺', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'furniture', icon: '🧺', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'furniture', icon: '🔥', walkable: false },
+      { type: 'floor', walkable: true },
+      {
+        type: 'npc',
+        icon: '👩',
+        walkable: false,
+        content: <Button onClick={() => handleParentInteraction('Mom')}>Talk to Mom</Button>,
+      },
+      {
+        type: 'npc',
+        icon: '👨',
+        walkable: false,
+        content: <Button onClick={() => handleParentInteraction('Dad')}>Talk to Dad</Button>,
+      },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+    ],
+    [
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'floor', walkable: true },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+      { type: 'wall', walkable: false },
+    ],
+  ]
+
   return (
-    <div className="absolute inset-0 bg-yellow-100 p-4">
-      <div className="grid grid-cols-2 gap-4 h-full">
-        <div className="bg-brown-300 rounded-lg p-2">
-          <h3 className="font-bold">Living Room</h3>
-          <button
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-            onClick={() => setShowDialog(true)}
-          >
-            Talk to Parents
-          </button>
-        </div>
-        <div className="bg-blue-300 rounded-lg p-2 flex justify-center">
-          <h3 className="font-bold">Kitchen</h3>
-        </div>
-        <div className="col-span-2 bg-green-300 rounded-lg p-2">
-          <h3 className="font-bold">Evaluate Health Choices</h3>
-          <button
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-            onClick={onEvaluate}
-          >
-            Evaluate Items
-          </button>
-        </div>
-        <div className="col-span-2 flex justify-center">
-          <button
-            className="px-4 py-2 bg-red-500 text-white rounded"
-            onClick={onExit}
-          >
-            Exit Home
-          </button>
-        </div>
+    <>
+      <BuildingInterior layout={homeLayout} onExit={onExit} buildingName="Home" />
+      <div className="absolute top-4 left-4 bg-white bg-opacity-80 p-2 rounded">
+        <h3 className="font-bold">Home Controls</h3>
+        <Button className="mt-2" onClick={onEvaluate}>
+          Evaluate Items
+        </Button>
       </div>
 
-      {showDialog && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounded-lg">
-            <h2 className="text-xl font-bold mb-2">Parents</h2>
-            <p>Do you want to accept a task?</p>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                className="px-4 py-2 bg-green-500 text-white rounded"
-                onClick={() => assignTask('Mom')}
-              >
-                Accept from Mom
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-                onClick={() => assignTask('Dad')}
-              >
-                Accept from Dad
-              </button>
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded"
-                onClick={() => setShowDialog(false)}
-              >
-                Decline
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={showParentDialog} onOpenChange={setShowParentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{activeParent === 'Mom' ? 'Mom' : 'Dad'}</DialogTitle>
+            <DialogDescription>
+              {activeParent === 'Mom'
+                ? 'Do you want Mom to evaluate the items?'
+                : 'Do you want to accept a task from Dad?'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            {activeParent === 'Mom' ? (
+              <Button onClick={onEvaluate}>Evaluate Items</Button>
+            ) : (
+              <Button onClick={() => assignTask('Dad')}>Accept Task from Dad</Button>
+            )}
+            <Button variant="secondary" onClick={() => setShowParentDialog(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <TaskList tasks={tasks} />
-    </div>
+    </>
   )
 }

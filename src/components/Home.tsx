@@ -7,36 +7,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 interface HomeProps {
   onEvaluate: () => void
   onExit: () => void
-  onEntering: () => void
   onAssignTask: (task: Task) => void
   tasks: Task[]
 }
 
-export function Home({ onEvaluate, onExit, onEntering, onAssignTask, tasks }: HomeProps) {
+export function Home({ onEvaluate, onExit, onAssignTask, tasks }: HomeProps) {
   const [showParentDialog, setShowParentDialog] = useState(false)
   const [activeParent, setActiveParent] = useState<'Mom' | 'Dad' | null>(null)
 
-  useEffect(() => {
-    onEntering()
-  }, [onEntering])
+  // Remove the useEffect hook that was causing the error
 
-  // Set active parent when button is clicked
   const handleParentInteraction = (parent: 'Mom' | 'Dad') => {
     setActiveParent(parent)
     setShowParentDialog(true)
   }
 
-  const assignTask = (parent: 'Dad') => {
+  const assignTask = (parent: 'Dad' | 'Mom') => {
     const newTask: Task = {
       id: tasks.length + 1,
-      description: `Task ${tasks.length + 1} from Dad`,
+      description: `Task ${tasks.length + 1} from ${parent}`,
       assignedBy: parent,
     }
     onAssignTask(newTask)
     setShowParentDialog(false)
   }
 
-  // Updated layout with NPC buttons for interaction
   const homeLayout = [
     [
       { type: 'wall', walkable: false },

@@ -13,6 +13,9 @@ import { Supermarket } from './components/Supermarket'
 import { ElectronicsShop } from './components/ElectronicsShop'
 import { ManufacturingShop } from './components/ManufacturingShop'
 import { TaskList, Task } from './components/task-list'
+import { Button } from "./components/ui/button"
+import { Input } from "./components/ui/input"
+import { motion } from 'framer-motion'
 
 const GRID_SIZE = 32
 
@@ -50,6 +53,7 @@ interface Maps {
 }
 
 export default function Game() {
+  const [playerName, setPlayerName] = useState('')
   const [playerPosition, setPlayerPosition] = useState({ x: 5, y: 5 })
   const [currentMap, setCurrentMap] = useState('town')
   const [gameState, setGameState] = useState('start')
@@ -167,14 +171,16 @@ export default function Game() {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [playerPosition, currentMap, gameState])
 
-  const startGame = (playerName: string) => {
-    setGameState('exploring')
-    setCurrentMap('town')
-    setPlayerPosition({ x: 5, y: 5 })
-    setDialog({
-      speaker: 'Game',
-      text: `Welcome, ${playerName}! Use arrow keys to move around the town. Visit the workshop to learn about health.`
-    })
+  const startGame = () => {
+    if (playerName.trim()) {
+      setGameState('exploring')
+      setCurrentMap('town')
+      setPlayerPosition({ x: 5, y: 5 })
+      setDialog({
+        speaker: 'Game',
+        text: `Welcome, ${playerName}! Use arrow keys to move around the town. Visit the workshop to learn about health.`
+      })
+    }
   }
 
   const enterBuilding = (building: string) => {
@@ -245,33 +251,47 @@ export default function Game() {
     setInventory([])
   }
 
-  const movePlayer = (x: number, y: number) => {
-    if (currentMap === 'home') {
-      setPlayerHomePosition({ x, y })
-    } else {
-      setPlayerPosition({ x, y })
-    }
-  }
-
   const assignTask = (newTask: Task) => {
     setTasks(prevTasks => [...prevTasks, newTask])
+  }
+
+  if (gameState === 'start') {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-b from-blue-500 to-purple-600">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-lg shadow-2xl p-8 w-96 text-center"
+        >
+          <h1 className="text-4xl font-bold mb-6 text-blue-600">Health Quest</h1>
+          <p className="text-gray-600 mb-6">Embark on a journey to learn about health and make smart choices!</p>
+          <Input
+            type="text"
+            placeholder="Enter your name"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            className="mb-4"
+          />
+          <Button 
+            onClick={startGame}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Start Adventure
+          </Button>
+          <div className="mt-6 text-sm text-gray-500">
+            <p>Use arrow keys to move</p>
+            <p>Enter buildings to interact</p>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
     <div className='overflow-hidden'>
       <div className="game-container w-full h-screen flex justify-center items-center bg-gray-800 scale-125">
         <div className="game-screen w-[640px] h-[640px] bg-white relative overflow-hidden">
-          {gameState === 'start' && (
-            <div className="start-screen flex flex-col items-center justify-center h-full">
-              <h1 className="text-4xl mb-4">Health Quest</h1>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-                onClick={() => startGame('Player')}
-              >
-                Start Game
-              </button>
-            </div>
-          )}
           {gameState === 'exploring' && (
             <>
               <WorldMap
@@ -280,7 +300,7 @@ export default function Game() {
                 onEnterBuilding={enterBuilding}
               />
               <Character position={playerPosition} />
-              {currentMap === 'workshop' && <Workshop onExit={exitBuilding} />}
+              {currentMap === 'workshop' && <Workshop onExit={exitBuilding} level={level} />}
               {currentMap === 'shop' && <Shop onBuy={buyItem} onExit={exitBuilding} />}
               {currentMap === 'supermarket' && <Supermarket onBuy={buyItem} onExit={exitBuilding} />}
               {currentMap === 'electronics' && <ElectronicsShop onBuy={buyItem} onExit={exitBuilding} />}
@@ -290,7 +310,6 @@ export default function Game() {
                 <Home
                   onEvaluate={evaluateItems}
                   onExit={exitBuilding}
-                  onEntering={() => setDialog()}
                   onAssignTask={assignTask}
                   tasks={tasks}
                 />

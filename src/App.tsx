@@ -264,7 +264,7 @@ export default function Game() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-lg shadow-2xl p-8 w-96 text-center"
         >
-          <h1 className="text-4xl font-bold mb-6 text-blue-600">Health Quest</h1>
+          <h1 className="text-4xl font-bold mb-6 text-blue-600">BIS-WISE</h1>
           <p className="text-gray-600 mb-6">Embark on a journey to learn about health and make smart choices!</p>
           <Input
             type="text"
